@@ -21,6 +21,10 @@ const char* password = "q1w2e3r4t5";
 
 Pinos GPIOS utilizados
 12 ldr esquerda baixo
+
+
+
+wrwerwerwerw
 13 ldr direita baixo
 14 ldr esquerda topo
 27 ldr direita topo

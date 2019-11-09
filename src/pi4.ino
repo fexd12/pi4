@@ -427,6 +427,8 @@ void loop()
 
   if (hasWifi && hasIoTHub)//enviar para o azure
   {
+    int medir;
+    medir = analogRead(34);
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {
       sprintf_s(msgText, sizeof(msgText),

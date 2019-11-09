@@ -60,11 +60,6 @@ static void reportedStateCallback(int status_code, void *userContextCallback);
 Servo horizontal;
 Servo vertical;
 
-asdioashásdfas;
-
-asdsa
-
-
 IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = NULL;
 
 static bool initIotHubClient(void)

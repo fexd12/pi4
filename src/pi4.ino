@@ -21,10 +21,6 @@ const char* password = "q1w2e3r4t5";
 
 Pinos GPIOS utilizados
 12 ldr esquerda baixo
-
-
-
-wrwerwerwerw
 13 ldr direita baixo
 14 ldr esquerda topo
 27 ldr direita topo
@@ -32,6 +28,7 @@ wrwerwerwerw
 25 servo vertical
 32 potenciometro
 33 potenciometro
+35 resistor potencia
 
 */
 
@@ -41,6 +38,7 @@ typedef struct EVENT_MESSAGE_INSTANCE_TAG
   size_t messageTrackingId; // For tracking the messages within the user callback.
 } EVENT_MESSAGE_INSTANCE_TAG;
 
+const char *messagedata= "{\"Tensão\":%.2f, \"Potencia\":%.2f}";
 static char propText[1024];
 static char msgText[1024];
 static int trackingId = 0;
@@ -306,7 +304,6 @@ static void sendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, v
 
   IoTHubMessage_Destroy(eventInstance->messageHandle);
   free(eventInstance);
-  /* Turn off Azure LED */
   
 }
 
@@ -427,17 +424,17 @@ void loop()
     }
     horizontal.write(servoh);
   }
-  delay(1000);
+  delay(2000);
 
   if (hasWifi && hasIoTHub)//enviar para o azure
   {
-    int medir;
-    medir = analogRead(34);
+    int sensorValue = analogRead(34);
+    double tensao = sensorValue * (3.3 / 1023);
+    double potencia = tensao * 10000;
+
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {
-      sprintf_s(msgText, sizeof(msgText),
-                "{\"Temperature\":%s,}",
-                "alguma coisa");
+      sprintf_s(msgText, sizeof(msgText), messagedata,tensao,potencia);
 
       // update temperature and humidity on default screen
            

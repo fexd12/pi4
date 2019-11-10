@@ -14,7 +14,7 @@
 #define ldrlt  34 //esquerda topo
 #define ldrrt  35 //direita topo
 
-const char* ssid = "Felipe";
+const char* ssid = "Fe";
 const char* password = "q1w2e3r4t5";
 
 /*

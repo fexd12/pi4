@@ -1,4 +1,4 @@
-#include "ESP32Servo.h"
+#include "Servo.h"
 #include "WiFi.h"
 #include "AzureIotHub.h"
 #include "Esp32MQTTClient.h"
@@ -38,7 +38,7 @@ typedef struct EVENT_MESSAGE_INSTANCE_TAG
   size_t messageTrackingId; // For tracking the messages within the user callback.
 } EVENT_MESSAGE_INSTANCE_TAG;
 
-const char *messagedata= "{\"Tensão\":%.2f, \"Potencia\":%.2f}";
+const char *messagedata= "{\"Tensao\":%.2f, \"Potencia\":%.2f}";
 static char propText[1024];
 static char msgText[1024];
 static int trackingId = 0;
@@ -349,8 +349,8 @@ void setup()
   send_interval_ms = millis();
   check_interval_ms = millis();
    
-  horizontal.attach(32);//gpio 26
-  vertical.attach(33);//gpio 25
+  horizontal.attach(32);//gpio 32
+  vertical.attach(33);//gpio 33
 }
 
 void loop()

@@ -20,14 +20,14 @@ const char* password = "q1w2e3r4t5";
 /*
 
 Pinos GPIOS utilizados
-12 ldr esquerda baixo
-13 ldr direita baixo
-14 ldr esquerda topo
-27 ldr direita topo
-26 servo horizontal
-25 servo vertical
-32 potenciometro
-33 potenciometro
+36 ldr esquerda baixo
+39 ldr direita baixo
+34 ldr esquerda topo
+35 ldr direita topo
+
+33 servo horizontal
+32 servo vertical
+
 35 resistor potencia
 
 */
@@ -361,6 +361,7 @@ void loop()
   int rt = analogRead(ldrrt); // top direita
   int ld = analogRead(ldrld); // baixo esquerda
   int rd = analogRead(ldrrd); // baixo direita
+  Serial.print("pino lt: ");
   Serial.println(lt);
   Serial.println(rt);
   Serial.println(ld);
@@ -369,76 +370,63 @@ void loop()
   //int dtime = analogRead(32) / 20; // potenciometros gpio 32
   //int tol = analogRead(33) / 4; //gpio 33
 
-  int tol = 40;
+  int tol = 50;
 
   int avt = (lt + rt) / 2; // media valor topo
   int avd = (ld + rd) / 2; // media valor baixo
+
   int avl = (lt + ld) / 2; // media valor esquerda
   int avr = (rt + rd) / 2; // media valor direita
   
-  int dvert = avt - avd;
-  int dhoriz = avl - avr;
+  int dvert = abs(avt - avd); //diferenca vetical - topo e  baixo
 
-  if (-1 * tol > dvert || dvert > tol) 
-  {
-    if (avt > avd)
-    {
-      servov = ++servov;
-      if (servov > 180)
-      {
-        servov = 180;
-      }
+  int dhoriz = abs(avl - avr); // iferenca horizontal - esquerda e direita
+
+  if ((avl > avr) && (dhoriz > tol)){ // horizontal  - esquerda e direita < 180
+    if(servoh < 180){
+      servoh++;
+      horizontal.write(servoh);
     }
-    else if (avt < avd)
-    {
-      servov = --servov;
-      if (servov < 0)
-      {
-        servov = 0;
-      }
-    }
-    vertical.write(servov);
+    
   }
 
-  if (-1 * tol > dhoriz || dhoriz > tol)
-  {
-    if (avl > avr)
-    {
-      servoh = --servoh;
-      if (servoh < 0)
+  else if((avr > avl) && (dhoriz > tol)){ // horizontal  - esquerda e direita > 0
+    if (servoh > 0) 
       {
-        servoh = 0;
+      servoh--;
+      horizontal.write(servoh);
       }
-    }
-    else if (avl < avr)
-    {
-      servoh = ++servoh;
-      if (servoh > 180)
-      {
-        servoh = 180;
-      }
-    }
-    else if (avl == avr)
-    {
-      
-    }
-    horizontal.write(servoh);
   }
-  delay(2000);
+
+  else if ((avt > avd) && (dvert > tol)){ // vertical  - topo e baixo < 180
+    if(servov < 180){
+      servov++;
+      vertical.write(servov);
+    }
+  }
+
+  else if((avd > avr) && (dvert > tol)){ // vertical  - topo e baixo > 0
+    if (servov > 0) 
+      {
+      servov--;
+      vertical.write(servov);
+      }
+  }
+  delay(1000);
 
   if (hasWifi && hasIoTHub)//enviar para o azure
   {
-    int sensorValue = analogRead(34);
+    int sensorValue = analogRead(23);
     double tensao = sensorValue * (3.3 / 1023);
     double potencia = tensao * 10000;
-
+ 
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {
       sprintf_s(msgText, sizeof(msgText), messagedata,tensao,potencia);
-
-      // update temperature and humidity on default screen
-           
+       
       sendTelemetry(msgText);
+
+      Serial.println(msgText);
 
       send_interval_ms = millis();
     }

@@ -1,9 +1,9 @@
-#include "Servo.h"
 #include "WiFi.h"
 #include "AzureIotHub.h"
 #include "Esp32MQTTClient.h"
 #include <Arduino.h>
 #include "parson.h"
+#include "teste.h"
 
 #define INTERVAL 2000 //intervalo entre envios de dados 
 #define DEVICE_ID "ESP32_PI_IV"
@@ -31,6 +31,8 @@ Pinos GPIOS utilizados
 35 resistor potencia
 
 */
+
+Control c;
 
 typedef struct EVENT_MESSAGE_INSTANCE_TAG
 {
@@ -349,14 +351,16 @@ void setup()
   send_interval_ms = millis();
   check_interval_ms = millis();
    
-  horizontal.attach(32);//gpio 32
-  vertical.attach(33);//gpio 33
+  //horizontal.attach(32);//gpio 32
+  //vertical.attach(33);//gpio 33
+  //horizontal.write(servoh);
+  //vertical.write(servov);
+  c.init();
 }
 
 void loop()
 {
-  //WiFi.scanNetworks();
-
+/*
   int lt = analogRead(ldrlt); // topo esquerda
   int rt = analogRead(ldrrt); // top direita
   int ld = analogRead(ldrld); // baixo esquerda
@@ -378,7 +382,7 @@ void loop()
   int avl = (lt + ld) / 2; // media valor esquerda
   int avr = (rt + rd) / 2; // media valor direita
   
-  int dvert = abs(avt - avd); //diferenca vetical - topo e  baixo
+  int dvert = abs(avt - avd); //diferenca vertical - topo e  baixo
 
   int dhoriz = abs(avl - avr); // iferenca horizontal - esquerda e direita
 
@@ -390,29 +394,33 @@ void loop()
     
   }
 
-  else if((avr > avl) && (dhoriz > tol)){ // horizontal  - esquerda e direita > 0
+   if((avr > avl) && (dhoriz > tol)){ // horizontal  - esquerda e direita > 0
     if (servoh > 0) 
       {
       servoh--;
       horizontal.write(servoh);
       }
   }
-
-  else if ((avt > avd) && (dvert > tol)){ // vertical  - topo e baixo < 180
+  delay(1000);
+  
+  if ((avt > avd) && (dvert > tol)){ // vertical  - topo e baixo < 180
     if(servov < 180){
       servov++;
       vertical.write(servov);
     }
   }
 
-  else if((avd > avr) && (dvert > tol)){ // vertical  - topo e baixo > 0
-    if (servov > 0) 
-      {
+  if((avd > avr) && (dvert > tol)){ // vertical  - topo e baixo > 0
+    if (servov > 0){ 
       servov--;
       vertical.write(servov);
-      }
+    }
   }
-  delay(1000);
+
+  delay(1000);  
+*/
+  c.move();
+  delay(100);
 
   if (hasWifi && hasIoTHub)//enviar para o azure
   {

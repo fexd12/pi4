@@ -3,9 +3,9 @@
 #include "Esp32MQTTClient.h"
 #include <Arduino.h>
 #include "parson.h"
-#include "teste.h"
+#include "servo_esp32.h"//versao modificada da servo.h
 
-#define INTERVAL 2000 //intervalo entre envios de dados 
+#define INTERVAL 10000 //intervalo entre envios de dados 
 #define DEVICE_ID "ESP32_PI_IV"
 #define MESSAGE_MAX_LEN 256
 // pinos LDRs (ver gpios)

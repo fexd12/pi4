@@ -425,8 +425,9 @@ void loop()
   if (hasWifi && hasIoTHub)//enviar para o azure
   {
     int sensorValue = analogRead(23);
-    double tensao = sensorValue * (3.3 / 1023);
-    double potencia = tensao * 10000;
+    double tensao = (sensorValue * 3.3 ) / 4095;
+    double corrente = tensao / 10000;
+    double potencia = tensao * corrente;
  
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {

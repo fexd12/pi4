@@ -27,7 +27,7 @@ class LDR
  for(int i =0; i<3; i++){
  delay(10);
  rvalue = analogRead(sensorPin);
- Vldr += rvalue*(3.3/1023);// 5 / 1024 
+ Vldr += rvalue*(3.3/4095);// 5 / 1024 
  }
 
  Vldr = Vldr/3;

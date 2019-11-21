@@ -3,19 +3,19 @@
 #include "Esp32MQTTClient.h"
 #include <Arduino.h>
 #include "parson.h"
-#include "servo_esp32.h"//versao modificada da servo.h
+#include "servo_esp32.h" //versao modificada da servo.h
 
-#define INTERVAL 10000 //intervalo entre envios de dados 
+#define INTERVAL 10000 //intervalo entre envios de dados
 #define DEVICE_ID "ESP32_PI_IV"
 #define MESSAGE_MAX_LEN 256
 // pinos LDRs (ver gpios)
-#define ldrrd  36 // direita baixo
-#define ldrld  39 //esquerda baixo
-#define ldrlt  34 //esquerda topo
-#define ldrrt  35 //direita topo
+#define ldrrd 36 // direita baixo
+#define ldrld 39 //esquerda baixo
+#define ldrlt 34 //esquerda topo
+#define ldrrt 35 //direita topo
 
-const char* ssid = "Fe";
-const char* password = "q1w2e3r4t5";
+const char *ssid = "Fe";
+const char *password = "q1w2e3r4t5";
 
 /*
 
@@ -28,11 +28,9 @@ Pinos GPIOS utilizados
 33 servo horizontal
 32 servo vertical
 
-35 resistor potencia
-
 */
 
-Control c;
+Control c; //inicializa os servos
 
 typedef struct EVENT_MESSAGE_INSTANCE_TAG
 {
@@ -40,7 +38,7 @@ typedef struct EVENT_MESSAGE_INSTANCE_TAG
   size_t messageTrackingId; // For tracking the messages within the user callback.
 } EVENT_MESSAGE_INSTANCE_TAG;
 
-const char *messagedata= "{\"Tensao\":%.2f, \"Potencia\":%.2f}";
+const char *messagedata = "{\"Tensao\":%.2f, \"Potencia\":%.2f}"; //json envio azure
 static char propText[1024];
 static char msgText[1024];
 static int trackingId = 0;
@@ -52,6 +50,8 @@ static uint64_t check_interval_ms;
 static bool needs_reconnect = false;
 int servoh = 90; // servo horizontal
 int servov = 90; // servo vertical
+
+//string de conezao azure
 static const char *connectionString = "HostName=Pi-teste.azure-devices.net;DeviceId=ESP32_PI_IV;SharedAccessKey=HEv+wHj4d6VeHDZ0jWDO7GoqyJkdK1GXBJr+YILiqD4=";
 
 //declaração das funções
@@ -60,9 +60,6 @@ static int deviceMethodCallback(const char *method_name, const unsigned char *pa
 static void connectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void *user_context);
 static void sendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *userContextCallback);
 static void reportedStateCallback(int status_code, void *userContextCallback);
-
-Servo horizontal;
-Servo vertical;
 
 IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle = NULL;
 
@@ -229,7 +226,7 @@ static void deviceTwinCallback(DEVICE_TWIN_UPDATE_STATE update_state, const unsi
 
         JSON_Object *itemObject = json_object_dotget_object(desired, itemName);
         value = (uint8_t)json_object_dotget_number(itemObject, "value");
-        
+
         JSON_Object *keyObject = json_object_dotget_object(reported, itemName);
         if (keyObject != NULL)
         {
@@ -272,7 +269,6 @@ static int deviceMethodCallback(const char *method_name, const unsigned char *pa
 
   Serial.print("Executed direct method payload: ");
   Serial.println((const char *)payload);
-
 }
 static void connectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void *user_context)
 {
@@ -306,7 +302,6 @@ static void sendConfirmationCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, v
 
   IoTHubMessage_Destroy(eventInstance->messageHandle);
   free(eventInstance);
-  
 }
 
 static void reportedStateCallback(int status_code, void *userContextCallback)
@@ -323,8 +318,8 @@ void setup()
   Serial.println("PI - IV");
   Serial.println("Conectando-se à rede WiFi...");
   Serial.println();
-  WiFi.begin(ssid,password);
-  
+  WiFi.begin(ssid, password); //inicializa comunicação wifi
+
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
@@ -332,15 +327,15 @@ void setup()
     hasWifi = false;
     Serial.print(WiFi.status());
   }
-  
+
   hasWifi = true;
   Serial.println("");
   Serial.println("WiFi connectado com sucesso!");
   Serial.println("IP obtido: ");
   Serial.println(WiFi.localIP());
   Serial.println(" > IoT Hub");
-  
-  if (!initIotHubClient())
+
+  if (!initIotHubClient()) //checa comunicacao com azure
   {
     hasIoTHub = false;
     Serial.println("Initializing IoT hub failed.");
@@ -350,89 +345,27 @@ void setup()
   Serial.println("Start sending events.");
   send_interval_ms = millis();
   check_interval_ms = millis();
-   
-  //horizontal.attach(32);//gpio 32
-  //vertical.attach(33);//gpio 33
-  //horizontal.write(servoh);
-  //vertical.write(servov);
-  c.init();
+
+  c.init(); //inicia os servos
 }
 
 void loop()
 {
-/*
-  int lt = analogRead(ldrlt); // topo esquerda
-  int rt = analogRead(ldrrt); // top direita
-  int ld = analogRead(ldrld); // baixo esquerda
-  int rd = analogRead(ldrrd); // baixo direita
-  Serial.print("pino lt: ");
-  Serial.println(lt);
-  Serial.println(rt);
-  Serial.println(ld);
-  Serial.println(rd);
 
-  //int dtime = analogRead(32) / 20; // potenciometros gpio 32
-  //int tol = analogRead(33) / 4; //gpio 33
-
-  int tol = 50;
-
-  int avt = (lt + rt) / 2; // media valor topo
-  int avd = (ld + rd) / 2; // media valor baixo
-
-  int avl = (lt + ld) / 2; // media valor esquerda
-  int avr = (rt + rd) / 2; // media valor direita
-  
-  int dvert = abs(avt - avd); //diferenca vertical - topo e  baixo
-
-  int dhoriz = abs(avl - avr); // iferenca horizontal - esquerda e direita
-
-  if ((avl > avr) && (dhoriz > tol)){ // horizontal  - esquerda e direita < 180
-    if(servoh < 180){
-      servoh++;
-      horizontal.write(servoh);
-    }
-    
-  }
-
-   if((avr > avl) && (dhoriz > tol)){ // horizontal  - esquerda e direita > 0
-    if (servoh > 0) 
-      {
-      servoh--;
-      horizontal.write(servoh);
-      }
-  }
-  delay(1000);
-  
-  if ((avt > avd) && (dvert > tol)){ // vertical  - topo e baixo < 180
-    if(servov < 180){
-      servov++;
-      vertical.write(servov);
-    }
-  }
-
-  if((avd > avr) && (dvert > tol)){ // vertical  - topo e baixo > 0
-    if (servov > 0){ 
-      servov--;
-      vertical.write(servov);
-    }
-  }
-
-  delay(1000);  
-*/
-  c.move();
+  c.move(); //movimenta os servos conforme leitura dos ldrs
   delay(100);
 
-  if (hasWifi && hasIoTHub)//enviar para o azure
+  if (hasWifi && hasIoTHub) //enviar para o azure o json com os valores de tensão e potencia
   {
     int sensorValue = analogRead(23);
-    double tensao = (sensorValue * 3.3 ) / 4095;
+    double tensao = (sensorValue * 3.3) / 4095;
     double corrente = tensao / 10000;
     double potencia = tensao * corrente;
- 
+
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {
-      sprintf_s(msgText, sizeof(msgText), messagedata,tensao,potencia);
-       
+      sprintf_s(msgText, sizeof(msgText), messagedata, tensao, potencia);
+
       sendTelemetry(msgText);
 
       Serial.println(msgText);

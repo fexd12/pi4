@@ -38,7 +38,7 @@ typedef struct EVENT_MESSAGE_INSTANCE_TAG
   size_t messageTrackingId; // For tracking the messages within the user callback.
 } EVENT_MESSAGE_INSTANCE_TAG;
 
-const char *messagedata = "{\"Tensao\":%.2f, \"Potencia\":%.2f}"; //json envio azure
+const char *messagedata = "{\"Tensao\":%.2f, \"Potencia\":%.4f}"; //json envio azure
 static char propText[1024];
 static char msgText[1024];
 static int trackingId = 0;
@@ -357,10 +357,10 @@ void loop()
 
   if (hasWifi && hasIoTHub) //enviar para o azure o json com os valores de tensão e potencia
   {
-    int sensorValue = analogRead(23);
+    int sensorValue = analogRead(32);
     double tensao = (sensorValue * 3.3) / 4095;
     double corrente = tensao / 10000;
-    double potencia = tensao * corrente;
+    double potencia = (tensao * tensao) / 28;
 
     if ((int)(millis() - send_interval_ms) >= INTERVAL)
     {

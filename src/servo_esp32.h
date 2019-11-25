@@ -179,7 +179,7 @@ private:
 public:
    void init()
    {
-      yPin = 32;
+      yPin = 23;
       xPin = 33;
       xTheta = 90;
       yTheta = 90;

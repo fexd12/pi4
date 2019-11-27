@@ -36,15 +36,15 @@ public:
 
       for (int i = 0; i < 3; i++)
       {
-         delay(10);
+         delay(1000);
          rvalue = analogRead(sensorPin);
-         Vldr += rvalue * (3.3 / 4095); // 5 / 1024
+         Vldr += (rvalue * 3.3) / 4095; // 5 / 1024
       }
 
       Vldr = Vldr / 3;                             //media dos valores
-      resistencia = (Vldr * 10000) / (3.3 - Vldr); // 5
+      resistencia = (Vldr * 18000) / (3.3 - Vldr); // 5
 
-      return resistencia;
+      return Vldr;
    }
 };
 
@@ -193,7 +193,6 @@ public:
       yServo.detach();
 
       xServo.attach(xPin);
-
       xServo.write(xTheta);
       delay(120);
       xServo.detach();
@@ -272,7 +271,7 @@ public:
       {
          xTheta -= xRot; //Gira para direcao indicada
          xServo.attach(xPin);
-         xServo.write(xTheta - xRot);
+         xServo.write(xTheta - xRot); // xTheta - xRot
          delay(120);
          xServo.detach();
       }

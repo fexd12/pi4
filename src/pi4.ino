@@ -319,6 +319,7 @@ void setup()
   Serial.println("Conectando-se à rede WiFi...");
   Serial.println();
   WiFi.begin(ssid, password); //inicializa comunicação wifi
+  c.init(); //inicia os servos
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -345,8 +346,6 @@ void setup()
   Serial.println("Start sending events.");
   send_interval_ms = millis();
   check_interval_ms = millis();
-
-  c.init(); //inicia os servos
 }
 
 void loop()
